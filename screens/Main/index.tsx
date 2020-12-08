@@ -46,6 +46,8 @@ export default function ScreenMain({ navigation }: { navigation: any }) {
 	const [error, setError] = useState<Error|string|undefined>();
 	const [loading, setLoading] = useState(false);
 	const [dataCommits, setDataCommits] = useState<CommitSection[]>([]);
+	const [dataQueryUrl, setDataQueryUrl] = useState<string>('https://api.github.com/repos/rblalock/pbtechhackathon2020/commits');
+	const [dataQueryPageUrl, setDataQueryPageUrl] = useState<string>();
 	const safeAreaInsets = useSafeAreaInsets();
 
 	useEffect(() => {
@@ -57,9 +59,21 @@ export default function ScreenMain({ navigation }: { navigation: any }) {
 	}, []);
 
 	const getData = () => {
-		fetch('https://api.github.com/repos/rblalock/pbtechhackathon2020/commits')
+		fetch(dataQueryPageUrl || dataQueryUrl)
 			.then((resp) => {
-				if (!resp.ok) setError('A network error occured.');
+				if (!resp.ok) {
+					setError('A network error occured.');
+					return;
+				}
+
+				// GitHub's API stores pagination URLs in the Link header
+				resp.headers?.get('link')?.split(',').forEach((link) => {
+					let match:RegExpMatchArray|null = link.match(/<(.*)>; rel="next"/);
+
+					if (match) {
+						setDataQueryPageUrl(match[1]);
+					}
+				 })
 
 				return resp.json();
 			})
