@@ -32,13 +32,20 @@ const ListHeading: FC<Props> = ({
 
 export const styles = StyleSheet.create({
 	Wrapper: {
-		backgroundColor: color.Grey800,
+		marginTop: 18,
+		marginHorizontal: 24,
+		alignSelf: 'flex-start',
+		backgroundColor: color.Green500,
+		paddingVertical: 6,
+		paddingHorizontal: 12,
+		borderRadius: 6,
 	},
 	Heading: {
-		marginVertical: 24,
+		flexGrow: 0,
 		fontSize: 12,
+		lineHeight: 14,
 		fontWeight: '700',
-		color: color.Green500,
+		color: color.Grey800,
 		textTransform: 'uppercase',
 	},
 });

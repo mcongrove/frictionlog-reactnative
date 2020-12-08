@@ -94,7 +94,8 @@ const ListRow: FC<Props> = ({
 
 export const styles = StyleSheet.create({
 	Wrapper: {
-		marginBottom: 12,
+		marginTop: 18,
+		marginHorizontal: 24,
 		padding: 18,
 		borderRadius: 6,
 		backgroundColor: color.Grey700,
