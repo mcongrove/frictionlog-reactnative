@@ -8,33 +8,9 @@ import {
 	View,
 } from 'react-native';
 import { color } from '../../styles';
+import { Commit } from '../../types';
 
-interface CommitAuthor {
-	login: string;
-	avatar_url: string;
-}
-
-interface CommitCommitter {
-	date: string;
-}
-
-interface CommitVerification {
-	verified: boolean;
-}
-
-interface CommitDetail {
-	message: string;
-	verification: CommitVerification;
-	committer: CommitCommitter;
-}
-
-interface Commit {
-	sha: string;
-	commit: CommitDetail;
-	author: CommitAuthor;
-}
-
-interface Props {
+export interface Props {
 	commit: Commit;
 	style?: StyleProp<TextStyle>;
 }
@@ -43,8 +19,6 @@ const ListRow: FC<Props> = ({
 	commit = null,
 	style = null,
 }) => {
-	const ts = new Date(commit?.commit.committer.date || '');
-
 	return commit && (
 		<View
 			style={[style, styles.Wrapper]}
@@ -82,7 +56,7 @@ const ListRow: FC<Props> = ({
 				<Text
 					style={styles.Time}
 				>
-					{ts.toLocaleString([], { 
+					{new Date(commit?.commit.committer.date || '').toLocaleString([], { 
 						hour: 'numeric', 
 						minute: '2-digit'
 					})}

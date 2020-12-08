@@ -7,11 +7,11 @@ import {
 	View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-community/async-storage';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import ListHeading from '../../components/ListHeading';
 import ListRow from '../../components/ListRow';
 import { color } from '../../styles';
+import { Commit } from '../../types';
 
 const tmp_data = [
 	{
@@ -37,17 +37,71 @@ const tmp_data = [
 	}
 ];
 
+interface CommitSection {
+	title: string;
+	data: Commit[];
+}
+
 export default function ScreenMain({ navigation }: { navigation: any }) {
+	const [error, setError] = useState<Error|string|undefined>();
 	const [loading, setLoading] = useState(false);
+	const [dataCommits, setDataCommits] = useState<CommitSection[]>([]);
 	const safeAreaInsets = useSafeAreaInsets();
 
 	useEffect(() => {
 		navigation?.setOptions({
 			headerShown: false
 		});
+
+		getData();
 	}, []);
 
-	return loading ? (
+	const getData = () => {
+		fetch('https://api.github.com/repos/rblalock/pbtechhackathon2020/commits')
+			.then((resp) => {
+				if (!resp.ok) setError('A network error occured.');
+
+				return resp.json();
+			})
+			.then((data) => {
+				const sections:CommitSection[] = [];
+				let section:Commit[] = [];
+				let s_date:string|undefined = undefined; // Store the date for the current section
+				
+				data.forEach((commit: Commit, index: number) => {
+					const c_date = new Date(commit.commit.committer.date).toLocaleString([], { 
+						month: 'long',
+						day: 'numeric'
+					});
+					
+					if (!s_date) s_date = c_date;
+
+					// Check if the commit is the same date as the section, if not, make a new section
+					// Also, append the new section if we hit the end of the list
+					if (c_date !== s_date || index === data.length - 1) {
+						sections.push({
+							title: s_date,
+							data: section
+						});
+
+						section = [];
+
+						s_date = c_date;
+					}
+
+					section.push(commit);
+				});
+
+				setDataCommits(sections);
+			})
+			.catch((err) => {
+				setError(err);
+			});
+	};
+
+	return error ? (
+		<></>
+	) : loading ? (
 		<></>
 	) : (
 		<SafeAreaProvider
@@ -63,14 +117,14 @@ export default function ScreenMain({ navigation }: { navigation: any }) {
 				<Text
 					style={styles.HeadingAccount}
 				>
-					mcongrove
+					rblalock
 				</Text>
 				<Text
 					style={styles.HeadingRepo}
 					adjustsFontSizeToFit
 					numberOfLines={1}
 				>
-					frictionlog-reactnative
+					pbtechhackathon2020
 				</Text>
 			</SafeAreaView>
 			<SafeAreaView
@@ -78,7 +132,7 @@ export default function ScreenMain({ navigation }: { navigation: any }) {
 				edges={['right', 'left']}
 			>
 				<SectionList
-					sections={tmp_data}
+					sections={dataCommits}
 					keyExtractor={(item, index) => item.sha + index}
 					renderItem={({ item }) => (
 						<ListRow
@@ -129,9 +183,9 @@ export const styles = StyleSheet.create({
 		flex: 1,
 	},
 	ListHeading: {
-
+		// Not necessary for now
 	},
 	ListRow: {
-
+		// Not necessary for now
 	},
 });
